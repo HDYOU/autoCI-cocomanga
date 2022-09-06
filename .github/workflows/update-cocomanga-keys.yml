@@ -27,11 +27,10 @@ jobs:
           cd autoCI
           pwd
           ls -l -h
-          ln -sf /workdir/autoCI $GITHUB_WORKSPACE/autoCI
-          echo "WORK_DIR=/workdir/autoCI" >> $GITHUB_ENV
-          cd ${{ env.WORK_DIR }} 
-          pwd
-          ls -l -h
+          ln -sf $PWD $GITHUB_WORKSPACE/autoCI
+          echo "WORK_DIR=$PWD" >> $GITHUB_ENV
+          echo ${{ hashFiles('/workdir/autoCI/requirements.txt') }}
+          echo ${{ hashFiles('/workdir/autoCI/package.json') }}
 
       - uses: actions/cache@v3
         with:
