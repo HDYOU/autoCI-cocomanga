@@ -38,7 +38,7 @@ jobs:
       - name: push changes
         uses: stefanzweifel/git-auto-commit-action@v4.14.1
         with:
-          commit_message: 'update cocomanhua keys at $(TZ=UTC-8 date +\'%Y-%m-%d %H:%M:%S\')'
+          commit_message: 'update cocomanhua keys at $(TZ=UTC-8 date +"%Y-%m-%d %H:%M:%S")'
           branch: autoBuild
           repository: ./autoBuild
           file_pattern: coco_keys.json
