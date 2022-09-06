@@ -14,11 +14,20 @@ jobs:
           
       - name: fetch source
         run: |
-          git clone -b dependabot/npm_and_yarn/puppeteer-17.1.1 --single-branch --depth 1  https://github.com/Xwite/autoCI.git autoCI
-          cd autoCI
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+          cd /workdir
           pwd
+          
+      - name: Clone source code
+        working-directory: /workdir
+        run: |
+          df -hT $PWD
+          git clone -b dependabot/npm_and_yarn/puppeteer-17.1.1 --single-branch --depth 1  https://github.com/Xwite/autoCI.git autoCI
+          ln -sf /workdir/autoCI $GITHUB_WORKSPACE/autoCI
 
       - uses: actions/cache@v3
+        working-directory: /workdir
         with:
           path: |
             ~/.local/lib/python3.8/site-packages
@@ -29,13 +38,16 @@ jobs:
           
 
       - name: extra keys
+        working-directory: /workdir
         run: |
           source ./coco/coco.sh
           main
       - name: move keys to ./autoBuild
+        working-directory: /workdir
         run: mv coco_keys.json ./autoBuild
 
       - name: push changes
+        working-directory: /workdir
         uses: stefanzweifel/git-auto-commit-action@v4.14.1
         with:
           commit_message: 'update cocomanhua keys at $(TZ=UTC-8 date +"%Y-%m-%d %H:%M:%S")'
@@ -46,6 +58,7 @@ jobs:
           create_branch: true
 
       - name: Delete workflow runs
+        working-directory: /workdir
         uses: Mattraks/delete-workflow-runs@v2
         with:
           token: ${{ github.token }}
