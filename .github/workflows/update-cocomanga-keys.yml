@@ -47,12 +47,9 @@ jobs:
           echo "requirements : ${{ hashFiles('requirements.txt') }}"
           echo "package : ${{ hashFiles('package.json') }}"
           
-          md5sum     requirements.txt
-          sha1sum    requirements.txt
-          sha256sum  requirements.txt
-          md5sum     package.json
-          sha1sum    package.json
-          sha256sum  package.json
+
+          sha256sum  requirements.txt | awk '{print $1}'
+          sha256sum  package.json  | awk '{print $1}'
 
       - uses: actions/cache@v3
         with:
@@ -62,6 +59,34 @@ jobs:
           key: ${{ runner.os }}-autoCI-${{ hashFiles('/workdir/autoCI/requirements.txt') }}-${{ hashFiles('/workdir/autoCI/package.json') }}
           restore-keys: |
             ${{ runner.os }}-autoCI-${{ hashFiles('/workdir/autoCI/requirements.txt') }}-${{ hashFiles('/workdir/autoCI/package.json') }}
+            
+      - name: install dependences
+        run: |
+          cd ${{ env.WORK_DIR }}
+          npm install
+          pip install -r requirements.txt
+      - name: check cacheed packages and chromium size
+        run: |
+          cd ${{ env.WORK_DIR }}
+          du -h -d 0 ./node_modules
+          du -h -d 0 ./node_modules/puppeteer/.local-chromium
+          du -h -d 0 ~/.local/lib/python3.8/site-packages
+      - name: puppeteer
+        run: |
+          cd ${{ env.WORK_DIR }}
+          source ./coco/coco.sh
+          puppeteer
+      - name: selenium
+        run: |
+          cd ${{ env.WORK_DIR }}
+          source ./coco/coco.sh
+          selenium
+      - name: cloudscraper
+        continue-on-error: true
+        run: |
+          cd ${{ env.WORK_DIR }}
+          source ./coco/coco.sh
+          cloudscraper
 
 
       - name: extra keys
