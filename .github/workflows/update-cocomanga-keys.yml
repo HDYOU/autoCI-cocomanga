@@ -101,11 +101,13 @@ jobs:
           cd ${{ env.WORK_DIR }}
           mkdir -p autoBuild
           mv coco_keys.json ./autoBuild
+          
+          echo "TIME=$(TZ=UTC-8 date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
 
       - name: push changes
         uses: stefanzweifel/git-auto-commit-action@v4.14.1
         with:
-          commit_message: update cocomanga keys at $(TZ=UTC-8 date +"%Y-%m-%d %H:%M:%S")
+          commit_message: update cocomanga keys at ${{env.TIME}}
           branch: autoBuild
           repository: ${{ env.WORK_DIR }}/autoBuild
           file_pattern: coco_keys.json
