@@ -112,17 +112,18 @@ jobs:
           git init
           git config --local user.name "GitHub Action"
           git config --local user.email "action@github.com"
+          git remote add origin ${{ github.repository }}
           git branch -m autoBuild
           git add coco_keys.json
           git add --all
-          git checkout --orphan new_branch
+          git checkout --orphan autoBuild
           git add -A
           git commit -am "Updated at $(TZ=UTC-8 date +'%Y-%m-%d %H:%M:%S')"
           git branch -D autoBuild 
           git branch -m autoBuild
           git branch -M autoBuild
+          git branch -vv
           git tag -l | xargs git tag -d
-          git remote add origin ${{ github.repository }}
           git push --force --set-upstream origin autoBuild
           
 
