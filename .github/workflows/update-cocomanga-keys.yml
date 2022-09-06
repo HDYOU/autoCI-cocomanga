@@ -122,6 +122,7 @@ jobs:
           git branch -m autoBuild
           git branch -M autoBuild
           git tag -l | xargs git tag -d
+          git remote add origin ${{ github.repository }}
           git push --force --set-upstream origin autoBuild
           
 
