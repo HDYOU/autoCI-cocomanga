@@ -5,20 +5,20 @@ on:
     - cron: '0 0/8 * * *'
   workflow_dispatch:
   watch:
-    types: [started]
-  
+    types: [ started ]
+
 jobs:
   updateKeys:
     runs-on: ubuntu-latest
     steps:
-          
+
       - name: fetch source
         run: |
           sudo mkdir -p /workdir
           sudo chown $USER:$GROUPS /workdir
           cd /workdir
           pwd
-          
+
       - name: Clone source code
         working-directory: /workdir
         run: |
@@ -32,19 +32,20 @@ jobs:
           path: |
             ~/.local/lib/python3.8/site-packages
             ./node_modules
-          key: ${{ runner.os }}-autoCI-${{ hashFiles('{{ env.WORK_DIR }}/**/requirements.txt') }}-${{ hashFiles('{{ env.WORK_DIR }}/**/package.json') }}
+          key: |
+            ${{ runner.os }}-autoCI-${{ hashFiles('${{ env.WORK_DIR }}/**/requirements.txt') }}-${{ hashFiles('${{ env.WORK_DIR }}/**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-autoCI-${{ hashFiles('{{ env.WORK_DIR }}/**/requirements.txt') }}-${{ hashFiles('{{ env.WORK_DIR }}/**/package.json') }}
-          
+            ${{ runner.os }}-autoCI-${{ hashFiles('${{ env.WORK_DIR }}/**/requirements.txt') }}-${{ hashFiles('${{ env.WORK_DIR }}/**/package.json') }}
+
 
       - name: extra keys
         run: |
-          cd {{ env.WORK_DIR }}
+          cd ${{ env.WORK_DIR }}
           source ./coco/coco.sh
           main
       - name: move keys to ./autoBuild
         run: |
-          cd {{ env.WORK_DIR }}
+          cd ${{ env.WORK_DIR }}
           mv coco_keys.json ./autoBuild
 
       - name: push changes
@@ -52,7 +53,7 @@ jobs:
         with:
           commit_message: 'update cocomanhua keys at $(TZ=UTC-8 date +"%Y-%m-%d %H:%M:%S")'
           branch: autoBuild
-          repository: {{ env.WORK_DIR }}/autoBuild
+          repository: ${{ env.WORK_DIR }}/autoBuild
           file_pattern: coco_keys.json
           skip_checkout: false
           create_branch: true
