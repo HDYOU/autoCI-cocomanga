@@ -28,6 +28,8 @@ jobs:
           pwd
           ls -l -h
           ln -sf $PWD $GITHUB_WORKSPACE/autoCI
+          ln -sf $PWD/requirements.txt $GITHUB_WORKSPACE/requirements.txt
+          ln -sf $PWD/package.json $GITHUB_WORKSPACE/package.json
           echo "WORK_DIR=$PWD" >> $GITHUB_ENV
           ls -l -h /workdir/autoCI/requirements.txt
           ls -l -h /workdir/autoCI/package.json
@@ -97,6 +99,7 @@ jobs:
       - name: move keys to ./autoBuild
         run: |
           cd ${{ env.WORK_DIR }}
+          mkdir -p autoBuild
           mv coco_keys.json ./autoBuild
 
       - name: push changes
