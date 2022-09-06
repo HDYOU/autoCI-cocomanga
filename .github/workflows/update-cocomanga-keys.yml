@@ -40,6 +40,12 @@ jobs:
           
           echo "requirements : ${{ hashFiles('/workdir/**/requirements.txt') }}"
           echo "package : ${{ hashFiles('/workdir/**/package.json') }}"
+          
+          echo "requirements : ${{ hashFiles('**/requirements.txt') }}"
+          echo "package : ${{ hashFiles('**/package.json') }}"
+          
+          echo "requirements : ${{ hashFiles('requirements.txt') }}"
+          echo "package : ${{ hashFiles('package.json') }}"
 
       - uses: actions/cache@v3
         with:
@@ -76,5 +82,5 @@ jobs:
         with:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
-          retain_days: 1
+          retain_days: 0
           keep_minimum_runs: 3
