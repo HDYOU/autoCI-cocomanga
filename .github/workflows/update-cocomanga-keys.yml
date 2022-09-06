@@ -46,6 +46,13 @@ jobs:
           
           echo "requirements : ${{ hashFiles('requirements.txt') }}"
           echo "package : ${{ hashFiles('package.json') }}"
+          
+          md5sum     requirements.txt
+          sha1sum    requirements.txt
+          sha256sum  requirements.txt
+          md5sum     package.json
+          sha1sum    package.json
+          sha256sum  package.json
 
       - uses: actions/cache@v3
         with:
