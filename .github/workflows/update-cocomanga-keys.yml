@@ -26,8 +26,9 @@ jobs:
           git clone -b dependabot/npm_and_yarn/puppeteer-17.1.1 --single-branch --depth 1  https://github.com/Xwite/autoCI.git autoCI
           ln -sf /workdir/autoCI $GITHUB_WORKSPACE/autoCI
 
-      - uses: actions/cache@v3
+      - name: cache
         working-directory: /workdir
+        uses: actions/cache@v3
         with:
           path: |
             ~/.local/lib/python3.8/site-packages
