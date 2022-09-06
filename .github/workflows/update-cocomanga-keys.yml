@@ -35,9 +35,9 @@ jobs:
             ~/.local/lib/python3.8/site-packages
             ./node_modules
           key: |
-            ${{ runner.os }}-autoCI-${{ hashFiles("${{ env.WORK_DIR }}/requirements.txt") }}-${{ hashFiles("${{ env.WORK_DIR }}/package.json") }}
+            ${{ runner.os }}-autoCI-${{ hashFiles("/workdir/autoCI/requirements.txt") }}-${{ hashFiles("/workdir/autoCI/package.json") }}
           restore-keys: |
-            ${{ runner.os }}-autoCI-${{ hashFiles("${{ env.WORK_DIR }}/requirements.txt") }}-${{ hashFiles("${{ env.WORK_DIR }}/package.json") }}
+            ${{ runner.os }}-autoCI-${{ hashFiles("/workdir/autoCI/requirements.txt") }}-${{ hashFiles("/workdir/autoCI/package.json") }}
 
 
       - name: extra keys
