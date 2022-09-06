@@ -105,12 +105,15 @@ jobs:
       - name: push changes
         uses: stefanzweifel/git-auto-commit-action@v4.14.1
         with:
-          commit_message: 'update cocomanga keys at $(TZ=UTC-8 date +"%Y-%m-%d %H:%M:%S")'
+          commit_message: update cocomanga keys at $(TZ=UTC-8 date +"%Y-%m-%d %H:%M:%S")
           branch: autoBuild
           repository: ${{ env.WORK_DIR }}/autoBuild
           file_pattern: coco_keys.json
           skip_checkout: false
           create_branch: true
+          commit_user_name: GitHub Action
+          commit_user_email: action@github.com
+          
 
       - name: Delete workflow runs
         uses: Mattraks/delete-workflow-runs@v2
