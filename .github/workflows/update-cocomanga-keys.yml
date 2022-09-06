@@ -26,6 +26,7 @@ jobs:
           git clone -b dependabot/npm_and_yarn/puppeteer-17.1.1 --single-branch --depth 1  https://github.com/Xwite/autoCI.git autoCI
           ln -sf /workdir/autoCI $GITHUB_WORKSPACE/autoCI
           echo "WORK_DIR=/workdir/autoCI" >> $GITHUB_ENV
+          cd ${{ env.WORK_DIR }} 
           pwd
           ls -l -h
 
