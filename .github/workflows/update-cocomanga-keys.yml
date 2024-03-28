@@ -1,0 +1,156 @@
+name: update cocomanga keys
+
+on:
+  schedule:
+    - cron: '0 0/8 * * *'
+  workflow_dispatch:
+  watch:
+    types: [ started ]
+
+env:
+  SCKEY: ${{ secrets.SCKEY }}
+  PUSH_PUSH: ${{ secrets.PUSH_PUSH }}
+  GITHUBTOKEN: ${{ secrets.GITHUBTOKEN }}
+  TG_TOKEN: ${{ secrets.TG_TOKEN }}
+  CHAT_ID: ${{ secrets.CHAT_ID }}
+  REPO_NAME: ${{ github.event.repository.name }}
+  OWR_NAME: ${{ github.actor }}
+  NETLIFY_API: ${{ secrets.NETLIFY_API }}
+  RENDER_API_API: ${{ secrets.RENDER_API_API }}
+  
+    
+jobs:
+  updateKeys:
+    runs-on: ubuntu-latest
+    steps:
+    
+      - uses: actions/checkout@main
+
+      - name: fetch source
+        run: |
+          pwd
+          echo "$PWD"
+          ls -l -h
+          sudo mkdir -p /workdir
+          sudo chown $USER:$GROUPS /workdir
+          cd /workdir
+          pwd
+
+      - name: Clone source code
+        working-directory: /workdir
+        run: |
+          df -hT $PWD
+          git clone -b main --single-branch --depth 1  https://github.com/Xwite/autoCI.git autoCI
+          cd autoCI
+          pwd
+          ls -l -h
+          echo "WORK_DIR=$PWD" >> $GITHUB_ENV
+          ls -l -h /workdir/autoCI/requirements.txt
+          ls -l -h /workdir/autoCI/package.json
+          
+          ls -l -h $GITHUB_WORKSPACE/
+          ls -l -h $GITHUB_WORKSPACE/../
+          
+          
+          echo "requirements : ${{ hashFiles('/workdir/autoCI/requirements.txt') }}"
+          echo "package : ${{ hashFiles('/workdir/autoCI/package.json') }}"
+          
+          echo "requirements : ${{ hashFiles('/workdir/autoCI/**/requirements.txt') }}"
+          echo "package : ${{ hashFiles('/workdir/autoCI/**/package.json') }}"
+          
+          echo "requirements : ${{ hashFiles('/workdir/**/requirements.txt') }}"
+          echo "package : ${{ hashFiles('/workdir/**/package.json') }}"
+          
+          echo "requirements : ${{ hashFiles('**/requirements.txt') }}"
+          echo "package : ${{ hashFiles('**/package.json') }}"
+          
+          echo "requirements : ${{ hashFiles('requirements.txt') }}"
+          echo "package : ${{ hashFiles('package.json') }}"
+          
+
+          sha256sum  requirements.txt | awk '{print $1}'
+          sha256sum  package.json  | awk '{print $1}'
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.local/lib/python3.8/site-packages
+            ./node_modules
+          key: ${{ runner.os }}-autoCI-${{ hashFiles('/workdir/autoCI/requirements.txt') }}-${{ hashFiles('/workdir/autoCI/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-autoCI-${{ hashFiles('/workdir/autoCI/requirements.txt') }}-${{ hashFiles('/workdir/autoCI/package.json') }}
+            
+      - name: install dependences
+        run: |
+          cd ${{ env.WORK_DIR }}
+          npm install
+          pip install -r requirements.txt
+      - name: check cacheed packages and chromium size
+        run: |
+          cd ${{ env.WORK_DIR }}
+          du -h -d 0 ./node_modules
+          ls -l ./node_modules
+          # du -h -d 0 ./node_modules/puppeteer/.local-chromium
+          # du -h -d 0 ~/.local/lib/python3.8/site-packages
+      - name: puppeteer
+        run: |
+          cd ${{ env.WORK_DIR }}
+          source ./coco/coco.sh
+          puppeteer
+      # - name: selenium
+        # run: |
+          # cd ${{ env.WORK_DIR }}
+          # source ./coco/coco.sh
+          # selenium
+      # - name: cloudscraper
+        # continue-on-error: true
+        # run: |
+          # cd ${{ env.WORK_DIR }}
+          # source ./coco/coco.sh
+          # cloudscraper
+
+
+      - name: extra keys
+        run: |
+          cd ${{ env.WORK_DIR }}
+          source ./coco/coco.sh
+          main
+      - name: move keys to ./autoBuild
+        run: |
+          cd ${{ env.WORK_DIR }}
+          mkdir -p autoBuild
+          mv coco_keys.json ./autoBuild
+          
+          echo "TIME=$(TZ=UTC-8 date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+          
+          
+      - name: Git push assets to Github
+        continue-on-error: false
+        run: |
+          
+          cd $GITHUB_WORKSPACE
+          git branch -vv
+          cp -rf ${{ env.WORK_DIR }}/autoBuild/coco_keys.json .
+          git init
+          git config --local user.name "GitHub Action"
+          git config --local user.email "action@github.com"
+          git branch -m main
+          git add .
+          git add --all
+          git checkout --orphan new_branch
+          git add -A
+          git commit -am "Updated at $(TZ=UTC-8 date +'%Y-%m-%d %H:%M:%S')"
+          git branch -D main 
+          git branch -m main
+          git branch -M main
+          git tag -l | xargs git tag -d
+          git push --force --set-upstream origin main
+          
+
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 3
