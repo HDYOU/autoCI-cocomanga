@@ -1,0 +1,132 @@
+name: update cocomanga keys
+
+on:
+  schedule:
+    - cron: '0 0/8 * * *'
+  workflow_dispatch:
+  watch:
+    types: [ started ]
+  push:
+    branches: [ main, master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true  # true false
+
+env:
+  SCKEY: ${{ secrets.SCKEY }}
+  PUSH_PUSH: ${{ secrets.PUSH_PUSH }}
+  GITHUBTOKEN: ${{ secrets.GITHUBTOKEN }}
+  TG_TOKEN: ${{ secrets.TG_TOKEN }}
+  CHAT_ID: ${{ secrets.CHAT_ID }}
+  REPO_NAME: ${{ github.event.repository.name }}
+  OWR_NAME: ${{ github.actor }}
+  NETLIFY_API: ${{ secrets.NETLIFY_API }}
+  RENDER_API_API: ${{ secrets.RENDER_API_API }}
+  
+    
+jobs:
+  updateKeys:
+    runs-on: ubuntu-latest
+    steps:
+    
+      - uses: actions/checkout@main
+        with:
+          repository: Xwite/autoCI
+          fetch-depth: 1
+
+      - name: Install and set up Python 3.8
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+          cache: 'pip'
+
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: |
+            ./node_modules
+          key: ${{ runner.os }}-autoCI-npm-${{ hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-autoCI-npm-${{ hashFiles('package.json') }}
+            
+      - name: install dependences
+        run: |
+          npm install
+          pip install -r requirements.txt
+
+      - name: check cacheed packages and chromium size
+        run: |
+          du -h -d 0 ./node_modules
+          ls -l ./node_modules
+          # du -h -d 0 ./node_modules/puppeteer/.local-chromium
+          # du -h -d 0 ~/.local/lib/python3.8/site-packages
+      # - name: puppeteer
+        # run: |
+          # cd ${{ env.WORK_DIR }}
+          # source ./coco/coco.sh
+          # puppeteer
+      # - name: selenium
+        # run: |
+          # cd ${{ env.WORK_DIR }}
+          # source ./coco/coco.sh
+          # selenium
+      # - name: cloudscraper
+        # continue-on-error: true
+        # run: |
+          # cd ${{ env.WORK_DIR }}
+          # source ./coco/coco.sh
+          # cloudscraper
+
+
+      - name: extra keys
+        run: |
+          source ./coco/coco.sh
+          main
+      - name: move keys to ./autoBuild
+        run: |
+          mkdir -p autoBuild
+          mv coco_keys.json ./autoBuild
+          
+          echo "TIME=$(TZ=UTC-8 date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+          # sudo mkdir -p /workdir/repo
+          
+      - name: Clone curent repository
+        uses: actions/checkout@main
+        # working-directory: /workdir/repo
+        with:
+          fetch-depth: 1
+          path: curent_repo
+       
+      - name: Git push assets to Github
+        continue-on-error: false
+        run: |
+          
+          
+          cp -rf ./autoBuild/coco_keys.json ./curent_repo
+          
+          cd curent_repo
+          git branch -vv
+          git init
+          git config --local user.name "GitHub Action"
+          git config --local user.email "action@github.com"
+          git branch -m main
+          git add .
+          git add --all
+          git checkout --orphan new_branch
+          git add -A
+          git commit -am "Updated at $(TZ=UTC-8 date +'%Y-%m-%d %H:%M:%S')"
+          git branch -D main 
+          git branch -m main
+          git branch -M main
+          git tag -l | xargs git tag -d
+          git push --force --set-upstream origin main
+          
+
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 3
